@@ -72,13 +72,14 @@
             status.textContent = `Please login first`;
         } else {
             // WebSocket connection
-            const socket = io('http://server.habito.id');
+            const socket = io('http://localhost:3000');
 
             socket.on('mqtt-data', (data) => {
                 status.textContent = `${data.message}`;
             });
 
             socket.on('light-data', (data) => {
+                // console.log('Received light data:', data); // Debugging untuk memverifikasi data
                 updateLightStatus(data);
             });
 
@@ -91,11 +92,16 @@
 
         // Update light status
         function updateLightStatus(data) {
-            const color = data.topic.split('/')[2];
+            // console.log(data); // Debugging untuk memastikan data yang diterima
+
+            const { color, status } = data; // Ambil `color` dan `status` dari data langsung
             if (lightStatuses[color]) {
-                lightStatuses[color].textContent = `${capitalize(color)}: ${data.message}`;
+                lightStatuses[color].textContent = `${capitalize(color)}: ${status}`;
+            } else {
+                console.warn(`Unknown light color: ${color}`); // Debugging jika warna tidak sesuai
             }
         }
+
 
         // Capitalize helper
         function capitalize(str) {

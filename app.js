@@ -97,7 +97,7 @@ function handleStatusMessage(customId, payload) {
 // Handle MQTT light messages
 function handleLightMessage(customId, payload) {
     const { topic, message } = payload;
-
+// console.log(topic);
     // Pecah topik untuk mendapatkan informasi
     const topicParts = topic.split('/');
     const color = topicParts[2] || 'unknown'; // Ambil bagian warna
