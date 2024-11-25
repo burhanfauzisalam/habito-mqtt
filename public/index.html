@@ -72,7 +72,7 @@
             status.textContent = `Please login first`;
         } else {
             // WebSocket connection
-            const socket = io('http://localhost:3000');
+            const socket = io('https://server.habito.id');
 
             socket.on('mqtt-data', (data) => {
                 status.textContent = `${data.message}`;
