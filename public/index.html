@@ -72,7 +72,7 @@
             status.textContent = `Please login first`;
         } else {
             // WebSocket connection
-            const socket = io('http://localhost:3000');
+            const socket = io('http://server.habito.id');
 
             socket.on('mqtt-data', (data) => {
                 status.textContent = `${data.message}`;
@@ -91,7 +91,7 @@
 
         // Update light status
         function updateLightStatus(data) {
-            const color = data.topic.split('/').pop();
+            const color = data.topic.split('/')[2];
             if (lightStatuses[color]) {
                 lightStatuses[color].textContent = `${capitalize(color)}: ${data.message}`;
             }

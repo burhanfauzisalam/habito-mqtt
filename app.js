@@ -94,13 +94,35 @@ function handleStatusMessage(customId, payload) {
 
 // Handle MQTT light messages
 function handleLightMessage(customId, payload) {
+    const { topic, message } = payload;
+
+    // Pecah topik untuk mendapatkan informasi
+    const topicParts = topic.split('/');
+    const color = topicParts[2] || 'unknown'; // Ambil bagian warna
+    const username = topicParts[3] || `user_${customId}`; // Ambil bagian username
+    const status = message.toString(); // Pesan diambil sebagai status (misalnya, "ON" atau "OFF")
+
+    // Kirim data melalui WebSocket jika userStatus ditemukan
     if (userStatus[customId]) {
-        io.to(userStatus[customId]).emit('light-data', payload);
+        io.to(userStatus[customId]).emit('light-data', { username, color, status });
         console.log(`Light data sent to user: ${customId}`);
     } else {
         console.log(`User with customId: ${customId} not found.`);
     }
+
+    // Simpan data ke database
+    const query = 'INSERT INTO light_logs (username, color, status) VALUES (?, ?, ?)';
+    db.execute(query, [username, color, status], (err, results) => {
+        if (err) {
+            console.error('Database insert error:', err);
+        } else {
+            console.log(`Light log saved for username: ${username}, color: ${color}, status: ${status}`);
+        }
+    });
 }
+
+
+
 
 // Reset timeout for marking user offline
 function resetUserTimeout(customId) {
