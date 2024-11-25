@@ -8,7 +8,9 @@ const http = require('http');
 const cors = require('cors');
 const mysql = require('mysql2');
 const createLightLogsTable = require("./createDB");
+const createUsersTable = require("./usersDB");
 createLightLogsTable();
+createUsersTable();
 
 // App setup
 const app = express();
