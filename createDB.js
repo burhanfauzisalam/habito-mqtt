@@ -3,7 +3,7 @@ const { queryDatabase } = require("./db");
 const createLightLogsTable = async() => {
   const sql = `
     CREATE TABLE IF NOT EXISTS light_logs (
-      id int PRIMARY KEY,
+      id NOT NULL AUTO_INCREMENT PRIMARY KEY,
       username varchar(50) DEFAULT NULL,
       color varchar(20) DEFAULT NULL,
       status enum('ON','OFF') DEFAULT NULL,
