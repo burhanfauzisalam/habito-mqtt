@@ -7,6 +7,8 @@ const mqtt = require('mqtt');
 const http = require('http');
 const cors = require('cors');
 const mysql = require('mysql2');
+const createLightLogsTable = require("./createDB");
+createLightLogsTable();
 
 // App setup
 const app = express();
