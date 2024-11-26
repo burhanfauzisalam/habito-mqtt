@@ -6,11 +6,14 @@ const { Server } = require('socket.io');
 const mqtt = require('mqtt');
 const http = require('http');
 const cors = require('cors');
-const mysql = require('mysql2');
+const { queryDatabase } = require('./db'); // Ganti dengan path ke file koneksi database
 const createLightLogsTable = require("./createDB");
 const createUsersTable = require("./usersDB");
+const createUserLogsTable = require("./userLogsDB");
+
 createLightLogsTable();
 createUsersTable();
+createUserLogsTable();
 
 // App setup
 const app = express();
@@ -23,24 +26,7 @@ const io = new Server(server, {
 
 // Load configuration from .env
 const PORT = process.env.PORT || 3000;
-const MYSQL_CONFIG = {
-    host: process.env.MYSQL_HOST,
-    user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PASSWORD,
-    database: process.env.MYSQL_DATABASE,
-};
 const MQTT_BROKER = process.env.MQTT_BROKER;
-
-// MySQL database connection
-const db = mysql.createConnection(MYSQL_CONFIG);
-
-db.connect((err) => {
-    if (err) {
-        console.error('Error connecting to MySQL database:', err);
-    } else {
-        console.log('Connected to MySQL database');
-    }
-});
 
 // MQTT client setup
 const mqttClient = mqtt.connect(MQTT_BROKER);
@@ -53,11 +39,100 @@ const MQTT_TOPICS = {
 let userStatus = {};
 let userTimeouts = {};
 
-// Helper function: Mark user as offline
+// Helper function: Save user log to database
+async function saveUserLog(customId, newStatus) {
+    const query = 'INSERT INTO user_logs (custom_id, status) VALUES (?, ?)';
+    try {
+        await queryDatabase(query, [customId, newStatus]);
+        console.log(`User log saved: customId=${customId}, status=${newStatus}`);
+    } catch (err) {
+        console.error('Database insert error for user log:', err);
+    }
+}
+
+// Handle MQTT status messages
+function handleStatusMessage(customId, payload) {
+    const newStatus = payload.message.toString(); // Status from MQTT payload
+
+    // Check if the status is different from the previous one
+    if (!userStatus[customId] || userStatus[customId].previousStatus !== newStatus) {
+        console.log(`Status change detected for ${customId}: ${newStatus}`);
+        
+        // Save the new status log to the database
+        saveUserLog(customId, newStatus);
+
+        // Update user status
+        if (!userStatus[customId]) {
+            userStatus[customId] = {};
+        }
+        userStatus[customId].previousStatus = newStatus;
+    } else {
+        console.log(`No status change for ${customId}: ${newStatus}`);
+    }
+
+    // Send the status update to the WebSocket client if connected
+    if (userStatus[customId] && userStatus[customId].socketId) {
+        io.to(userStatus[customId].socketId).emit('mqtt-data', payload);
+    }
+
+    // Reset user's timeout
+    resetUserTimeout(customId);
+}
+
+// Handle MQTT light messages
+async function handleLightMessage(customId, payload) {
+    const { topic, message } = payload;
+
+    // Pecah topik untuk mendapatkan informasi
+    const topicParts = topic.split('/');
+    const color = topicParts[2] || 'unknown'; // Ambil bagian warna
+    const username = topicParts[3] || `user_${customId}`; // Ambil bagian username
+    const status = message.toString(); // Pesan diambil sebagai status (misalnya, "ON" atau "OFF")
+
+    // Kirim data melalui WebSocket jika userStatus ditemukan
+    if (userStatus[customId]) {
+        io.to(userStatus[customId].socketId).emit('light-data', { username, color, status });
+        console.log(`Light data sent to user: ${customId}`);
+    } else {
+        console.log(`User with customId: ${customId} not found.`);
+    }
+
+    // Simpan data ke database
+    const query = 'INSERT INTO light_logs (username, color, status) VALUES (?, ?, ?)';
+    try {
+        await queryDatabase(query, [username, color, status]);
+        console.log(`Light log saved for username: ${username}, color: ${color}, status: ${status}`);
+    } catch (err) {
+        console.error('Database insert error:', err);
+    }
+}
+
+// Reset timeout for marking user offline
+function resetUserTimeout(customId) {
+    if (userTimeouts[customId]) {
+        clearTimeout(userTimeouts[customId]);
+    }
+    userTimeouts[customId] = setTimeout(() => {
+        setUserOffline(customId);
+    }, 3000); // 3 seconds
+}
+
+// Mark user as offline
 function setUserOffline(customId) {
     if (userStatus[customId]) {
-        console.log(`User ${customId} marked as offline`);
-        io.to(userStatus[customId]).emit('mqtt-data', { topic: MQTT_TOPICS.STATUS, message: 'OFFLINE' });
+        const currentStatus = userStatus[customId].previousStatus;
+        if (currentStatus !== 'OFFLINE') {
+            console.log(`User ${customId} marked as offline`);
+
+            // Save the offline status to the database
+            saveUserLog(customId, 'OFFLINE');
+
+            // Update user status
+            userStatus[customId].previousStatus = 'OFFLINE';
+
+            // Notify the WebSocket client
+            io.to(userStatus[customId].socketId).emit('mqtt-data', { topic: MQTT_TOPICS.STATUS, message: 'OFFLINE' });
+        }
     }
 }
 
@@ -83,61 +158,6 @@ mqttClient.on('message', (topic, message) => {
     }
 });
 
-// Handle MQTT status messages
-function handleStatusMessage(customId, payload) {
-    if (userStatus[customId]) {
-        io.to(userStatus[customId]).emit('mqtt-data', payload);
-        console.log(`Status data sent to user: ${customId}`);
-
-        // Reset user's timeout
-        resetUserTimeout(customId);
-    } else {
-        console.log(`User with customId: ${customId} not found.`);
-    }
-}
-
-// Handle MQTT light messages
-function handleLightMessage(customId, payload) {
-    const { topic, message } = payload;
-// console.log(topic);
-    // Pecah topik untuk mendapatkan informasi
-    const topicParts = topic.split('/');
-    const color = topicParts[2] || 'unknown'; // Ambil bagian warna
-    const username = topicParts[3] || `user_${customId}`; // Ambil bagian username
-    const status = message.toString(); // Pesan diambil sebagai status (misalnya, "ON" atau "OFF")
-
-    // Kirim data melalui WebSocket jika userStatus ditemukan
-    if (userStatus[customId]) {
-        io.to(userStatus[customId]).emit('light-data', { username, color, status });
-        console.log(`Light data sent to user: ${customId}`);
-    } else {
-        console.log(`User with customId: ${customId} not found.`);
-    }
-
-    // Simpan data ke database
-    const query = 'INSERT INTO light_logs (username, color, status) VALUES (?, ?, ?)';
-    db.execute(query, [username, color, status], (err, results) => {
-        if (err) {
-            console.error('Database insert error:', err);
-        } else {
-            console.log(`Light log saved for username: ${username}, color: ${color}, status: ${status}`);
-        }
-    });
-}
-
-
-
-
-// Reset timeout for marking user offline
-function resetUserTimeout(customId) {
-    if (userTimeouts[customId]) {
-        clearTimeout(userTimeouts[customId]);
-    }
-    userTimeouts[customId] = setTimeout(() => {
-        setUserOffline(customId);
-    }, 3000); // 3 seconds
-}
-
 // WebSocket event listeners
 io.on('connection', (socket) => {
     console.log('A user connected:', socket.id);
@@ -145,14 +165,15 @@ io.on('connection', (socket) => {
 
     socket.on('set-custom-id', (id) => {
         customId = id;
-        userStatus[customId] = socket.id;
+        if (!userStatus[customId]) {
+            userStatus[customId] = {};
+        }
+        userStatus[customId].socketId = socket.id;
         console.log(`User ${customId} connected`);
 
         // Reset user's timeout
         resetUserTimeout(customId);
     });
-
-    socket.emit('mqtt-data', { topic: MQTT_TOPICS.STATUS, message: 'OFFLINE' });
 
     socket.on('disconnect', () => {
         if (customId) {
@@ -168,22 +189,21 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // API endpoint: User login
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
 
-    db.execute(query, [username, password], (err, results) => {
-        if (err) {
-            console.error('Database query error:', err);
-            return res.status(500).send('Internal Server Error');
-        }
-
+    try {
+        const results = await queryDatabase(query, [username, password]);
         if (results.length > 0) {
             return res.json({ message: 'Login successful', user: results[0] });
         } else {
             return res.status(401).json({ message: 'Invalid username or password' });
         }
-    });
+    } catch (err) {
+        console.error('Database query error:', err);
+        return res.status(500).send('Internal Server Error');
+    }
 });
 
 // API endpoint: Check server status
