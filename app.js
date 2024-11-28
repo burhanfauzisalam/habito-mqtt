@@ -54,14 +54,11 @@ async function saveUserLog(customId, newStatus) {
 function handleStatusMessage(customId, payload) {
     const newStatus = payload.message.toString(); // Status from MQTT payload
 
-    // Check if the status is different from the previous one
     if (!userStatus[customId] || userStatus[customId].previousStatus !== newStatus) {
         console.log(`Status change detected for ${customId}: ${newStatus}`);
         
-        // Save the new status log to the database
         saveUserLog(customId, newStatus);
 
-        // Update user status
         if (!userStatus[customId]) {
             userStatus[customId] = {};
         }
@@ -70,12 +67,10 @@ function handleStatusMessage(customId, payload) {
         console.log(`No status change for ${customId}: ${newStatus}`);
     }
 
-    // Send the status update to the WebSocket client if connected
     if (userStatus[customId] && userStatus[customId].socketId) {
         io.to(userStatus[customId].socketId).emit('mqtt-data', payload);
     }
 
-    // Reset user's timeout
     resetUserTimeout(customId);
 }
 
@@ -83,13 +78,11 @@ function handleStatusMessage(customId, payload) {
 async function handleLightMessage(customId, payload) {
     const { topic, message } = payload;
 
-    // Pecah topik untuk mendapatkan informasi
     const topicParts = topic.split('/');
-    const color = topicParts[2] || 'unknown'; // Ambil bagian warna
-    const username = topicParts[3] || `user_${customId}`; // Ambil bagian username
-    const status = message.toString(); // Pesan diambil sebagai status (misalnya, "ON" atau "OFF")
+    const color = topicParts[2] || 'unknown';
+    const username = topicParts[3] || `user_${customId}`;
+    const status = message.toString();
 
-    // Kirim data melalui WebSocket jika userStatus ditemukan
     if (userStatus[customId]) {
         io.to(userStatus[customId].socketId).emit('light-data', { username, color, status });
         console.log(`Light data sent to user: ${customId}`);
@@ -97,7 +90,6 @@ async function handleLightMessage(customId, payload) {
         console.log(`User with customId: ${customId} not found.`);
     }
 
-    // Simpan data ke database
     const query = 'INSERT INTO light_logs (username, color, status) VALUES (?, ?, ?)';
     try {
         await queryDatabase(query, [username, color, status]);
@@ -114,7 +106,7 @@ function resetUserTimeout(customId) {
     }
     userTimeouts[customId] = setTimeout(() => {
         setUserOffline(customId);
-    }, 3000); // 3 seconds
+    }, 3000);
 }
 
 // Mark user as offline
@@ -123,14 +115,8 @@ function setUserOffline(customId) {
         const currentStatus = userStatus[customId].previousStatus;
         if (currentStatus !== 'OFFLINE') {
             console.log(`User ${customId} marked as offline`);
-
-            // Save the offline status to the database
             saveUserLog(customId, 'OFFLINE');
-
-            // Update user status
             userStatus[customId].previousStatus = 'OFFLINE';
-
-            // Notify the WebSocket client
             io.to(userStatus[customId].socketId).emit('mqtt-data', { topic: MQTT_TOPICS.STATUS, message: 'OFFLINE' });
         }
     }
@@ -171,7 +157,6 @@ io.on('connection', (socket) => {
         userStatus[customId].socketId = socket.id;
         console.log(`User ${customId} connected`);
 
-        // Reset user's timeout
         resetUserTimeout(customId);
     });
 
@@ -205,6 +190,33 @@ app.post('/login', async (req, res) => {
         return res.status(500).send('Internal Server Error');
     }
 });
+
+// API endpoint: Cek status lampu
+// API endpoint: Cek status lampu
+app.get('/light-status', async (req, res) => {
+    const { id } = req.query; // Use id instead of username or color
+
+    if (!id) {
+        return res.status(400).json({ message: 'id is required' });
+    }
+
+    try {
+        // Modify the query to filter based on customId
+        const query = 'SELECT * FROM light_logs WHERE username = ?';
+        const params = [id];
+
+        const results = await queryDatabase(query, params);
+        if (results.length > 0) {
+            return res.json({ message: 'Light status fetched', data: results });
+        } else {
+            return res.status(404).json({ message: 'No light status found for id ' + id });
+        }
+    } catch (err) {
+        console.error('Database query error:', err);
+        return res.status(500).send('Internal Server Error');
+    }
+});
+
 
 // API endpoint: Check server status
 app.get('/', (req, res) => {
