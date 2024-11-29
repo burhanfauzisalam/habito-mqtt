@@ -219,7 +219,7 @@ app.get('/light-status', async (req, res) => {
 
     try {
         // Modify the query to filter based on customId
-        const query = 'SELECT * FROM light_logs WHERE username = ?';
+        const query = 'SELECT * FROM light_logs WHERE username = ? AND DATE(created_at) = CURDATE()';
         const params = [id];
 
         const results = await queryDatabase(query, params);
