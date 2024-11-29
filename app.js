@@ -90,14 +90,31 @@ async function handleLightMessage(customId, payload) {
         console.log(`User with customId: ${customId} not found.`);
     }
 
-    const query = 'INSERT INTO light_logs (username, color, status) VALUES (?, ?, ?)';
+    const checkQuery = `
+        SELECT COUNT(*) AS count 
+        FROM light_logs 
+        WHERE username = ? 
+          AND color = ? 
+          AND DATE(time) = CURDATE()`;
+    const insertQuery = 'INSERT INTO light_logs (username, color, status) VALUES (?, ?, ?)';
+
     try {
-        await queryDatabase(query, [username, color, status]);
-        console.log(`Light log saved for username: ${username}, color: ${color}, status: ${status}`);
+        // Check if data with the same username, color, and today's date exists
+        const result = await queryDatabase(checkQuery, [username, color]);
+        const recordCount = result[0]?.count || 0;
+
+        if (recordCount === 0) {
+            // If no record exists, insert the new data
+            await queryDatabase(insertQuery, [username, color, status]);
+            console.log(`Light log saved for username: ${username}, color: ${color}, status: ${status}`);
+        } else {
+            console.log(`Duplicate record found for username: ${username}, color: ${color}. Skipping insert.`);
+        }
     } catch (err) {
-        console.error('Database insert error:', err);
+        console.error('Database error:', err);
     }
 }
+
 
 // Reset timeout for marking user offline
 function resetUserTimeout(customId) {
