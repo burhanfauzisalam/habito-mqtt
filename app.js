@@ -31,8 +31,8 @@ const MQTT_BROKER = process.env.MQTT_BROKER;
 // MQTT client setup
 const mqttClient = mqtt.connect(MQTT_BROKER);
 const MQTT_TOPICS = {
-    STATUS: 'habito/status/#',
-    LIGHT: 'habito/light/#',
+    STATUS: 'habito/status/#', // example: habito/status/habito_001
+    LIGHT: 'habito/light/#', // example: habito/light/green/habito_001
 };
 
 // Track user status and timeouts
@@ -52,7 +52,7 @@ async function saveUserLog(customId, newStatus) {
 
 // Handle MQTT status messages
 function handleStatusMessage(customId, payload) {
-    const newStatus = payload.message.toString(); // Status from MQTT payload
+    const newStatus = payload.message.toString().toUpperCase(); // Status from MQTT payload
 
     if (!userStatus[customId] || userStatus[customId].previousStatus !== newStatus) {
         console.log(`Status change detected for ${customId}: ${newStatus}`);
