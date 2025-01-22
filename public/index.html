@@ -1,103 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Device Dashboard</title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <!-- Google Fonts - Oswald Regular -->
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400&display=swap"
+      rel="stylesheet"
+    />
 
     <style>
-         body {
-            font-family: 'Oswald', sans-serif; /* Applying Oswald Regular font */
-        }
-        .device-image {
-            width: 150px;
-            height: auto;
-            border-radius: 50%;
-        }
-        .task-icon {
-            font-size: 3rem;
-        }
-        .footer {
-            margin-top: 50px;
-            text-align: center;
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-        .navbar {
-            position: sticky;
-            top: 0;
-            z-index: 1030; /* Pastikan navbar tetap di atas elemen lain */
-        }
+      body {
+        font-family: "Oswald", sans-serif; /* Applying Oswald Regular font */
+      }
+      .device-image {
+        width: 150px;
+        height: auto;
+        border-radius: 50%;
+      }
+      .task-icon {
+        font-size: 3rem;
+      }
+      .footer {
+        margin-top: 50px;
+        text-align: center;
+        font-size: 0.9rem;
+        color: #6c757d;
+      }
+      .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1030; /* Pastikan navbar tetap di atas elemen lain */
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-            <a class="navbar-brand" href="#"><strong><img src="./img/habito.png" width="100"></strong></a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-                    <!-- <li class="nav-item"><a class="nav-link" href="#">News</a></li> -->
-                    <!-- <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>  -->
-                    <li class="nav-item"><a class="nav-link" href="#" onclick="logout()">Logout</a></li>
-                </ul>
-            </div>
+      <div class="container">
+        <a class="navbar-brand" href="#"
+          ><strong><img src="./img/habito.png" width="100" /></strong
+        ></a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+            <!-- <li class="nav-item"><a class="nav-link" href="#">News</a></li> -->
+            <!-- <li class="nav-item"><a class="nav-link" href="#">Settings</a></li>  -->
+            <li class="nav-item">
+              <a class="nav-link" href="#" onclick="logout()">Logout</a>
+            </li>
+          </ul>
         </div>
+      </div>
     </nav>
 
     <!-- Main Content -->
     <div class="container my-5">
-        <div class="row">
-            <!-- Device Image -->
-            <div class="col-md-6 text-center">
-                <img src="./img/device.png" alt="Device Image" class="device-image">
-            </div>
-            <!-- Device Details -->
-            <div class="col-md-6" style="padding-left: 4em; padding-right: 4em">
-                <h4><strong>Detail Device</strong></h4>
-                <hr>
-                <p><strong>Device ID:</strong> <span id="device-id">-</span></p>
-                <p id="device-owner"><strong>Owner:</strong> Nola</p>
-                <p><strong>Status: </strong><span id="device-status">OFFLINE</span></p>
-            </div>
+      <div class="row">
+        <!-- Device Image -->
+        <div class="col-md-6 text-center">
+          <img src="./img/device.png" alt="Device Image" class="device-image" />
         </div>
+        <!-- Device Details -->
+        <div class="col-md-6" style="padding-left: 4em; padding-right: 4em">
+          <h4><strong>Detail Device</strong></h4>
+          <hr />
+          <p><strong>Device ID:</strong> <span id="device-id">-</span></p>
+          <p id="device-owner"><strong>Owner:</strong> Nola</p>
+          <p>
+            <strong>Status: </strong><span id="device-status">OFFLINE</span>
+          </p>
+        </div>
+      </div>
 
-        <!-- Today's Tasks -->
-        <div class="text-center mt-5">
-            <h4><strong>Today Task</strong></h4>
+      <!-- Today's Tasks -->
+      <div class="text-center mt-5">
+        <h4><strong>Today Task</strong></h4>
+      </div>
+      <div class="row text-center mt-4">
+        <div class="col-6 col-md-3">
+          <div class="text-danger task-icon" id="task-red" style="opacity: 0.3">
+            <img src="./img/Red.png" width="40%" />
+          </div>
+          <p>Task Red</p>
         </div>
-        <div class="row text-center mt-4">
-            <div class="col-6 col-md-3">
-                <div class="text-danger task-icon" id="task-red" style="opacity: 0.3;"><img src="./img/Red.png" width="40%"></div>
-                <p>Task Red</p>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="text-success task-icon" id="task-green" style="opacity: 0.3;"><img src="./img/Green.png" width="40%"></div>
-                <p>Task Green</p>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="text-primary task-icon" id="task-blue" style="opacity: 0.3;"><img src="./img/Blue.png" width="40%"></div>
-                <p>Task Blue</p>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="text-warning task-icon" id="task-yellow" style="opacity: 0.3;"><img src="./img/Yellow.png" width="40%"></div>
-                <p>Task Yellow</p>
-            </div>
+        <div class="col-6 col-md-3">
+          <div
+            class="text-success task-icon"
+            id="task-green"
+            style="opacity: 0.3"
+          >
+            <img src="./img/Green.png" width="40%" />
+          </div>
+          <p>Task Green</p>
         </div>
+        <div class="col-6 col-md-3">
+          <div
+            class="text-primary task-icon"
+            id="task-blue"
+            style="opacity: 0.3"
+          >
+            <img src="./img/Blue.png" width="40%" />
+          </div>
+          <p>Task Blue</p>
+        </div>
+        <div class="col-6 col-md-3">
+          <div
+            class="text-warning task-icon"
+            id="task-yellow"
+            style="opacity: 0.3"
+          >
+            <img src="./img/Yellow.png" width="40%" />
+          </div>
+          <p>Task Yellow</p>
+        </div>
+      </div>
     </div>
 
     <!-- Footer -->
-    <div class="footer">
-        &copy; 2024 - Developed by PKBM Nola
-    </div>
+    <div class="footer">&copy; 2024 - Developed by PKBM Nola</div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -105,105 +143,104 @@
     <!-- WebSocket Script -->
     <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
     <script>
-         // Periksa status login
-        function checkLogin() {
-            const isLoggedIn = localStorage.getItem('username');
-            if (!isLoggedIn) {
-                // Jika belum login, arahkan ke halaman login
-                window.location.href = '/login.html';
-            }
+      // Periksa status login
+      function checkLogin() {
+        const isLoggedIn = localStorage.getItem("username");
+        if (!isLoggedIn) {
+          // Jika belum login, arahkan ke halaman login
+          window.location.href = "/login.html";
         }
+      }
 
-        // Jalankan fungsi checkLogin saat halaman dimuat
-        checkLogin();
+      // Jalankan fungsi checkLogin saat halaman dimuat
+      checkLogin();
 
-        // const server = 'http://localhost:5003'
-        const server = 'https://server.habito.id'
+      // const server = 'http://localhost:5003'
+      const server = "http://localhost:5001";
 
-        // Elemen DOM untuk status perangkat dan lampu
-        const status = document.getElementById('device-status');
-        const deviceId = document.getElementById('device-id');
-        const lightStatuses = {
-            red: document.getElementById('task-red'),
-            green: document.getElementById('task-green'),
-            blue: document.getElementById('task-blue'),
-            yellow: document.getElementById('task-yellow')
-        };
+      // Elemen DOM untuk status perangkat dan lampu
+      const status = document.getElementById("device-status");
+      const deviceId = document.getElementById("device-id");
+      const lightStatuses = {
+        red: document.getElementById("task-red"),
+        green: document.getElementById("task-green"),
+        blue: document.getElementById("task-blue"),
+        yellow: document.getElementById("task-yellow"),
+      };
 
-        const customID = localStorage.getItem('username');
-        deviceId.textContent = `${customID}`;
-        console.log(customID);
+      const customID = localStorage.getItem("username");
+      deviceId.textContent = `${customID}`;
+      console.log(customID);
 
-        if (!customID) {
-            status.textContent = `Please login first`;
+      if (!customID) {
+        status.textContent = `Please login first`;
+      } else {
+        // Koneksi WebSocket menggunakan socket.io
+        // const socket = io('https://server.habito.id');
+        const socket = io(server); // Pastikan URL ini sesuai dengan server Anda
+
+        socket.on("mqtt-data", (data) => {
+          // Perbarui status perangkat
+          status.textContent = `${data.message}`;
+          console.log(data.message);
+        });
+
+        socket.on("connect", () => {
+          console.log("Connected to WebSocket server");
+          const customId = localStorage.getItem("username");
+          socket.emit("set-custom-id", customId);
+        });
+
+        socket.on("light-data", (data) => {
+          console.log("Received light data:", data); // Debugging untuk memverifikasi data
+          updateLightStatus(data);
+        });
+
+        // Request light status from the backend
+        // fetch(`https://server.habito.id/light-status?id=${customID}`)
+        fetch(`${server}/light-status?id=${customID}`)
+          .then((response) => response.json())
+          .then((data) => {
+            updateLightStatusFromBackend(data.data);
+            console.log(data.data);
+          })
+          .catch((error) => {
+            console.error("Error fetching light status:", error);
+          });
+      }
+
+      function updateLightStatus(data) {
+        // console.log(data); // Debugging untuk memastikan data yang diterima
+
+        const { color, status } = data; // Ambil `color` dan `status` dari data langsung
+        if (lightStatuses[color]) {
+          lightStatuses[color].style.opacity = status === "ON" ? "1" : "0.3";
         } else {
-            // Koneksi WebSocket menggunakan socket.io
-            // const socket = io('https://server.habito.id');
-            const socket = io(server); // Pastikan URL ini sesuai dengan server Anda
-
-            socket.on('mqtt-data', (data) => {
-                // Perbarui status perangkat
-                status.textContent = `${data.message}`;
-                console.log(data.message);
-            });
-
-            socket.on('connect', () => {
-                console.log('Connected to WebSocket server');
-                const customId = localStorage.getItem('username');
-                socket.emit('set-custom-id', customId);
-            });
-
-            socket.on('light-data', (data) => {
-                // console.log('Received light data:', data); // Debugging untuk memverifikasi data
-                updateLightStatus(data);
-            });
-
-            // Request light status from the backend
-            // fetch(`https://server.habito.id/light-status?id=${customID}`)
-            fetch(`${server}/light-status?id=${customID}`)
-                .then(response => response.json())
-                .then(data => {
-                    updateLightStatusFromBackend(data.data);
-                    console.log(data.data);
-                })
-                .catch(error => {
-                    console.error('Error fetching light status:', error);
-                });
+          console.warn(`Unknown light color: ${color}`); // Debugging jika warna tidak sesuai
         }
+      }
 
-        function updateLightStatus(data) {
-            // console.log(data); // Debugging untuk memastikan data yang diterima
+      // Capitalize helper
+      function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+      }
 
-            const { color, status } = data; // Ambil `color` dan `status` dari data langsung
-            if (lightStatuses[color]) {
-                lightStatuses[color].style.opacity = status === 'ON' ? '1' : '0.3';
-            } else {
-                console.warn(`Unknown light color: ${color}`); // Debugging jika warna tidak sesuai
-            }
-        }
+      // Fungsi untuk memperbarui status lampu dari backend
+      function updateLightStatusFromBackend(data) {
+        data.forEach((light) => {
+          const color = light.color.toLowerCase(); // Pastikan format warna konsisten (huruf kecil)
+          const status = light.status;
+          if (lightStatuses[color]) {
+            lightStatuses[color].style.opacity = status === "ON" ? "1" : "0.3";
+          }
+        });
+      }
 
-        // Capitalize helper
-        function capitalize(str) {
-            return str.charAt(0).toUpperCase() + str.slice(1);
-        }
-
-        // Fungsi untuk memperbarui status lampu dari backend
-        function updateLightStatusFromBackend(data) {
-            data.forEach(light => {
-                const color = light.color.toLowerCase(); // Pastikan format warna konsisten (huruf kecil)
-                const status = light.status;
-                if (lightStatuses[color]) {
-                    lightStatuses[color].style.opacity = status === 'ON' ? '1' : '0.3';
-                }
-            });
-        }
-
-        // Fungsi untuk logout
-        function logout() {
-            localStorage.removeItem('username');
-            window.location.href = 'login.html';
-        }
+      // Fungsi untuk logout
+      function logout() {
+        localStorage.removeItem("username");
+        window.location.href = "login.html";
+      }
     </script>
-
-</body>
+  </body>
 </html>
