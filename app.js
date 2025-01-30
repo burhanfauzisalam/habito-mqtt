@@ -251,6 +251,24 @@ app.get("/light-status", async (req, res) => {
   }
 });
 
+app.post("/reset-data", async (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({ message: "id is required" });
+  }
+
+  try {
+    const deleteQuery = "DELETE FROM light_logs WHERE username = ?";
+    await queryDatabase(deleteQuery, [id]);
+
+    return res.json({ message: `Data for id ${id} has been reset` });
+  } catch (err) {
+    console.error("Database query error:", err);
+    return res.status(500).send("Internal Server Error");
+  }
+});
+
 // API endpoint: Check server status
 app.get("/", (req, res) => {
   res.send("MQTT Backend is running");
