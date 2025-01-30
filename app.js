@@ -223,7 +223,6 @@ app.post("/login", async (req, res) => {
 });
 
 // API endpoint: Cek status lampu
-// API endpoint: Cek status lampu
 app.get("/light-status", async (req, res) => {
   const { id } = req.query; // Use id instead of username or color
 
@@ -251,7 +250,7 @@ app.get("/light-status", async (req, res) => {
   }
 });
 
-app.post("/reset-data", async (req, res) => {
+app.get("/reset-data", async (req, res) => {
   const { id } = req.query;
 
   if (!id) {
