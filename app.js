@@ -134,7 +134,7 @@ function resetUserTimeout(customId) {
   }
   userTimeouts[customId] = setTimeout(() => {
     setUserOffline(customId);
-  }, 3000);
+  }, 15000);
 }
 
 // Mark user as offline
